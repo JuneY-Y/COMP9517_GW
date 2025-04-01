@@ -13,7 +13,7 @@ Our study includes deployment pipelines and performance analysis across differen
 
 - **Cindy Chen**
 - **Jiaming Yang**
-- **Kejing Wang**
+- **Kejing Wang**  🌟
 - **Ning Wu**
 - **Xin Kun Lin**
 
