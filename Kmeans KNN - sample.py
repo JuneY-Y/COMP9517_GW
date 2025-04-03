@@ -14,9 +14,6 @@ from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, ClassifierMixin
 import joblib
 
-# ---------------------- From your previous code ----------------------
-# Reuse the AerialImageDataGenerator class adapted for feature extraction
-
 class AerialImageDataGenerator:
     def __init__(self, batch_size=32, img_height=224, img_width=224, augmentation=True):
         self.batch_size = batch_size
