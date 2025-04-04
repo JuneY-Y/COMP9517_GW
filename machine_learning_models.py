@@ -114,7 +114,7 @@ def compute_bovw_features(descriptors, codebook):
         nearest_word = np.argmin(distances)
         hist[nearest_word] += 1
     
-    # Normalize histogram
+    # Normalise histogram
     if np.sum(hist) > 0:
         hist = hist / np.sum(hist)
     
