@@ -83,5 +83,27 @@ Conv → C2f → SE → CBAM → Conv → C2f → SE → CBAM → …
 > This ablation isolates the effect of inserting SE and CBAM attention modules into the backbone of YOLOv8. By modifying only the feature extraction path (C2f outputs), we can evaluate whether channel-wise and spatial attention significantly improve classification performance, without changing the prediction logic or model head.
 >
 > ## idea follow paper by Jiaming
-
+	CBAM = Channel Attention + Spatial Attention
+ 
 ---
+## 🧠 CBAM 结构图示意：
+
+Input
+  │
+  ├──► Channel Attention (通道注意力)
+  │       ├─ Global AvgPool
+  │       ├─ Global MaxPool
+  │       └─ FC → ReLU → FC → Sigmoid
+  │       ↓
+  │     Channel-wise weights
+  │       ↓
+  └──×  原始特征图（按通道乘权重）
+          ↓
+  ├──► Spatial Attention (空间注意力)
+  │       ├─ Channel-wise Avg
+  │       ├─ Channel-wise Max
+  │       └─ 7×7 Conv → Sigmoid
+  │       ↓
+  │     Spatial weights
+  ↓
+Output（加权后输出）
