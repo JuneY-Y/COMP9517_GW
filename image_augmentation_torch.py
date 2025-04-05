@@ -220,29 +220,14 @@ class AugmentationGenerator:
             EnhancementTransform(sharpen_amount, contrast_enhancement),
             transforms.Pad(padding=224, padding_mode='reflect'),
             transforms.RandomRotation(20),
-            transforms.RandomAffine(
-                degrees=0,
-                translate=(0.2, 0.2),  # Horizontal and vertical shift
-                # Too much zoom could crop out important details.
-                # Too little zoom might not introduce enough variation.
-                # Zooming out too much may introduce excessive background, reducing the focus on key objects.
-
-                scale=(0.9, 1.1),      # Zoom range
-                fill=127,  # Let the padding mode handle it
-            ),
             transforms.CenterCrop((224, 224)),
             transforms.ColorJitter(
                 # Normally setting adjustment factor to be between 0.7 and 1.3 helps
                 # keep brightness changes within a realistic range without making images too dark (unusable)
                 # or too bright (washed out).
-                # 0.7 darkens the image (simulating shadowy conditions).
-                # 1.3 brightens the image (simulating strong lighting).
                 # Too dark  = loss of detail.
                 # Too bright = overexposure, washed-out colors.
-                brightness=(0.7, 1.3),  # Brightness range
-                contrast=0.1,           # Contrast variation
-                saturation=0.1,         # Saturation variation
-                hue=0.1                 # Hue variation
+                brightness=(0.6, 1.1),  # Brightness range
             ),
             # As the dataset is comprised of aerial views which include symmetric objects 
             # both horizontal and vertical flips are used
@@ -276,22 +261,30 @@ class AugmentationGenerator:
         ])
 
     # Create datasets for training, validation and optionally testing
-    def create_datasets(self, train_dir, val_dir, test_dir=None, sample_size=None):
-
+    def create_datasets(self, train_dir, val_dir, test_dir=None, sample_size=None, val_sample_size=None, test_sample_size=None):
+    
+        # If val_sample_size is not provided, use the same as training sample size
+        if val_sample_size is None:
+            val_sample_size = sample_size
+            
         train_dataset = ImageDataset(train_dir, transform=self.train_transform, sample_size=sample_size)
-        val_dataset = ImageDataset(val_dir, transform=self.val_transform, sample_size=sample_size)
+        val_dataset = ImageDataset(val_dir, transform=self.val_transform, sample_size=val_sample_size)
         
         if test_dir is not None:
-            test_dataset = ImageDataset(test_dir, transform=self.val_transform)
+            test_dataset = ImageDataset(test_dir, transform=self.val_transform, sample_size=test_sample_size)
             return train_dataset, val_dataset, test_dataset
         
         return train_dataset, val_dataset
     
     # Create data loaders for training, validation and optionally testing
-    def create_dataloaders(self, train_dir, val_dir, test_dir=None, batch_size=32, sample_size=None):
+    def create_dataloaders(self, train_dir, val_dir, test_dir=None, batch_size=32, sample_size=None, val_sample_size=None, test_sample_size=None):
+
         if test_dir is not None:
             train_dataset, val_dataset, test_dataset = self.create_datasets(
-                train_dir, val_dir, test_dir, sample_size
+                train_dir, val_dir, test_dir, 
+                sample_size=sample_size, 
+                val_sample_size=val_sample_size, 
+                test_sample_size=test_sample_size
             )
             
             train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -300,7 +293,11 @@ class AugmentationGenerator:
             
             return train_loader, val_loader, test_loader
         else:
-            train_dataset, val_dataset = self.create_datasets(train_dir, val_dir, sample_size=sample_size)
+            train_dataset, val_dataset = self.create_datasets(
+                train_dir, val_dir, 
+                sample_size=sample_size, 
+                val_sample_size=val_sample_size
+            )
             
             train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
             val_loader = DataLoader(val_dataset, batch_size=batch_size)
@@ -324,9 +321,8 @@ def visualize_augmentations(image_path, n_augmentations=5, use_occlusion=True):
         EnhancementTransform(0.3, True),
         transforms.Pad(padding=224, padding_mode='reflect'),
         transforms.RandomRotation(20),
-        transforms.RandomAffine(degrees=20, translate=(0.2, 0.2), scale=(0.9, 1.1), fill=127),
         transforms.CenterCrop((224, 224)),
-        transforms.ColorJitter(brightness=(0.7, 1.3), contrast=0.1, saturation=0.1, hue=0.1),
+        transforms.ColorJitter(brightness=(0.6, 1.1)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
     ]
