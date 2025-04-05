@@ -86,24 +86,73 @@ Conv → C2f → SE → CBAM → Conv → C2f → SE → CBAM → …
 	CBAM = Channel Attention + Spatial Attention
  
 ---
-## 🧠 CBAM 结构图示意：
+# 🧠 CBAM: Convolutional Block Attention Module
 
+CBAM (Convolutional Block Attention Module) is a lightweight, plug-and-play attention module that can be easily integrated into any CNN architecture. It improves feature representations by sequentially applying **channel attention** and **spatial attention**, helping the network focus on *what* and *where* to attend.
+
+---
+
+## 🔍 Structure Overview
 Input
-  │
-  ├──► Channel Attention (通道注意力)
-  │       ├─ Global AvgPool
-  │       ├─ Global MaxPool
-  │       └─ FC → ReLU → FC → Sigmoid
-  │       ↓
-  │     Channel-wise weights
-  │       ↓
-  └──×  原始特征图（按通道乘权重）
-          ↓
-  ├──► Spatial Attention (空间注意力)
-  │       ├─ Channel-wise Avg
-  │       ├─ Channel-wise Max
-  │       └─ 7×7 Conv → Sigmoid
-  │       ↓
-  │     Spatial weights
-  ↓
-Output（加权后输出）
+│
+├──► Channel Attention (通道注意力)
+│       ├─ Global AvgPool
+│       ├─ Global MaxPool
+│       └─ FC → ReLU → FC → Sigmoid
+│       ↓
+│     Channel-wise weights
+│       ↓
+└──×  Original feature map (weighted by channel importance)
+↓
+├──► Spatial Attention (空间注意力)
+│       ├─ Channel-wise Avg
+│       ├─ Channel-wise Max
+│       └─ 7×7 Conv → Sigmoid
+│       ↓
+│     Spatial weights
+↓
+Output (refined feature map)
+---
+
+## ✨ Key Components
+
+### 🔹 Channel Attention
+- Learns which **channels** (feature types) are important.
+- Combines **Global AvgPool** and **Global MaxPool**, followed by shared MLP.
+- Formula:
+
+Mc(F) = σ(MLP(AvgPool(F)) + MLP(MaxPool(F)))
+### 🔸 Spatial Attention
+- Learns **where** (spatial locations) the important information is.
+- Combines **channel-aggregated average and max**, followed by a **7×7 convolution**.
+- Formula:
+Ms(F) = σ(conv7x7([Avg(F); Max(F)]))
+---
+
+## ✅ Benefits
+
+| Feature            | Description                                       |
+|--------------------|---------------------------------------------------|
+| 🔌 Plug-and-play   | Easily inserted after any convolutional block     |
+| 📦 Lightweight     | Very small parameter overhead                     |
+| 🧠 Dual attention  | Combines channel and spatial for maximum effect   |
+| 📈 Proven results  | Boosts performance on classification and detection|
+
+---
+
+## 📘 Reference
+
+**Paper:** [CBAM: Convolutional Block Attention Module](https://arxiv.org/abs/1807.06521)  
+**Conference:** ECCV 2018
+
+---
+
+## 🛠️ How to use in YOLOv8
+
+You can insert CBAM after feature blocks like `C2f` in the backbone:
+
+```yaml
+- [-1, 3, C2f, [128]]
+- [-1, 1, CBAMBlock, [128]]
+
+
