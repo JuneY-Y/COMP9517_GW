@@ -9,7 +9,7 @@ import random
 from pathlib import Path
 
 # split_dataset.py
-random.seed(42)
+
 
 original_dir = Path("Aerial_Landscapes")
 output_dir = Path("datasets")
