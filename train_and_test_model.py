@@ -267,8 +267,6 @@ def attention_map(model_ver,test_loader,datatype):
 
     plt.imshow(img)
     plt.imshow(cam, alpha=0.5, cmap='jet')
-    plt.title(f"Pred: {preds.item()}, True: {label.item()}")
-    plt.colorbar()
     plt.axis('off')
     plt.show()
 
