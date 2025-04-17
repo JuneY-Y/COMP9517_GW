@@ -5,6 +5,7 @@ from torchvision import datasets, transforms, models
 import torchvision.models.resnet
 import matplotlib.pyplot as plt
 import os
+import cv2
 import numpy as np
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
@@ -201,3 +202,75 @@ def testModel(model_ver,test_loader,datatype):
     # 输出混淆矩阵
     print("🔍 Confusion Matrix:")
     print(confusion_matrix(all_labels, all_preds))
+
+def attention_map(model_ver,test_loader,datatype):
+    # ------------------ 加载模型 ------------------
+    if model_ver == 18:
+        model = models.resnet18(pretrained=True)
+    elif model_ver == 50:
+        model = models.resnet50(pretrained=True)
+    elif model_ver == 101:
+        model = models.resnet101(pretrained=True)
+
+    num_classes = 15
+    model.fc = nn.Linear(model.fc.in_features, num_classes)
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+
+    bestweight_path = f'bestweight_resnet{model_ver}_{datatype}.pth'
+    if os.path.exists(bestweight_path):
+        bestweight = torch.load(bestweight_path, map_location=device)
+        model.load_state_dict(bestweight)
+    else:
+        print("error: can't find bestweight!")
+        return
+
+    model.eval()
+
+    # ------------------ 提取图像 ------------------
+    image, label = next(iter(test_loader))
+    image = image[0].unsqueeze(0).to(device)
+    label = label[0].unsqueeze(0).to(device)
+
+    # ------------------ 注册hook提取layer4输出 ------------------
+    feature_map = []
+
+    def hook_fn(module, input, output):
+        feature_map.append(output)
+
+    hook = model.layer4.register_forward_hook(hook_fn)
+
+    # ------------------ 前向传播 ------------------
+    output = model(image)
+    _, preds = torch.max(output, 1)
+
+    # ------------------ 获取 feature map 和 fc 权重 ------------------
+    feature_map = feature_map[0].squeeze(0).cpu().detach().numpy()  # shape: [C, H, W]
+    fc_weights = model.fc.weight[preds.item()].cpu().detach().numpy()  # shape: [C]
+
+    # ------------------ 计算 CAM ------------------
+    cam = np.zeros(feature_map.shape[1:], dtype=np.float32)  # shape: [H, W]
+    for i, w in enumerate(fc_weights):
+        cam += w * feature_map[i, :, :]
+
+    cam = np.maximum(cam, 0)
+    cam = cv2.resize(cam, (224, 224))
+    cam = cam / cam.max()  # 归一化
+
+    # ------------------ 可视化 ------------------
+    img = image[0].cpu().detach().numpy().transpose(1, 2, 0)
+    mean = np.array([0.485, 0.456, 0.406])
+    std = np.array([0.229, 0.224, 0.225])
+    img = std * img + mean  # 反标准化
+    img = np.clip(img, 0, 1)
+
+    plt.imshow(img)
+    plt.imshow(cam, alpha=0.5, cmap='jet')
+    plt.title(f"Pred: {preds.item()}, True: {label.item()}")
+    plt.colorbar()
+    plt.axis('off')
+    plt.show()
+
+    hook.remove()
+    return cam
