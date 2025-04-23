@@ -11,12 +11,6 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 
 class EarlyStopping:
     def __init__(self, patience=5, delta=0.0, mode='min'):
-        """
-        参数说明：
-        - patience: 容忍多少次没有提升后停止
-        - delta: 最小提升量（小于这个不算提升）
-        - mode: 'min' 表示监控 loss，'max' 表示监控 acc
-        """
         self.patience = patience
         self.delta = delta
         self.mode = mode
@@ -25,12 +19,10 @@ class EarlyStopping:
         self.early_stop = False
 
     def __call__(self, current_score):
-        # 初次
         if self.best_score is None:
             self.best_score = current_score
             return
 
-        # 判断是否是提升
         if self.mode == 'min':
             improvement = self.best_score - current_score
             if improvement > self.delta:
@@ -65,23 +57,18 @@ def trainModel(model_ver,train_loader,val_loader,datatype):
 
     early_stopper = EarlyStopping(patience=10, delta=0.01, mode='min')
     
-    # 冻结所有层的参数
     for param in model.parameters():
         param.requires_grad = False
     
-    # 替换 fc 层
-    num_classes = 15  # 设置你任务的类别数量
+    num_classes = 15
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     
-    # 设置设备（使用 CUDA 如果可用）
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
     
-    # 定义损失函数和优化器
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.fc.parameters(), lr=0.001)
     
-    # 训练设置
     trained = False
     bestweight_path = 'bestweight_resnet' + str(model_ver) +'_' + str(datatype) + '.pth'
     if os.path.exists(bestweight_path):
@@ -91,26 +78,22 @@ def trainModel(model_ver,train_loader,val_loader,datatype):
     else:
         print("error: can't find bestweight!")
     
-    # 开始训练
     if trained==False:
         for epoch in range(num_epochs):
             print(f"📚 Epoch {epoch}/{num_epochs}")
-            model.train()  # 设置为训练模式
+            model.train()
             train_loss, correct, total = 0.0, 0, 0
         
             for images, labels in train_loader:
                 images, labels = images.to(device), labels.to(device)
         
-                # 前向传播
                 outputs = model(images)
                 loss = criterion(outputs, labels)
         
-                # 反向传播
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
         
-                # 统计信息
                 train_loss += loss.item() * images.size(0)
                 _, preds = torch.max(outputs, 1)
                 correct += (preds == labels).sum().item()
@@ -121,8 +104,7 @@ def trainModel(model_ver,train_loader,val_loader,datatype):
             train_losses.append(train_loss)
             print(f"✅ Train Loss: {epoch_loss:.4f} | Acc: {epoch_acc:.4f}")
         
-            # 评估模型
-            model.eval()  # 设置为评估模式
+            model.eval()
             val_loss, val_correct, val_total = 0.0, 0, 0
             best_val_loss = 1.0
             with torch.no_grad():
@@ -166,7 +148,7 @@ def testModel(model_ver,test_loader,datatype):
     elif model_ver==101:
         model = models.resnet101(pretrained=True)
 
-    num_classes = 15  # 设置你任务的类别数量
+    num_classes = 15
     model.fc = nn.Linear(model.fc.in_features, num_classes)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
@@ -191,20 +173,16 @@ def testModel(model_ver,test_loader,datatype):
           all_preds.extend(preds.cpu().numpy())
           all_labels.extend(labels.cpu().numpy())
     
-    # 计算准确率
     accuracy = np.mean(np.array(all_preds) == np.array(all_labels))
     print(f"✅ ResNet-{model_ver}, Accuracy: {accuracy * 100:.2f}%")
     
-    # 输出 classification_report
     print("\n📊 Classification Report:")
     print(classification_report(all_labels, all_preds, digits=4))
     
-    # 输出混淆矩阵
     print("🔍 Confusion Matrix:")
     print(confusion_matrix(all_labels, all_preds))
 
 def attention_map(model_ver,test_loader,datatype):
-    # ------------------ 加载模型 ------------------
     if model_ver == 18:
         model = models.resnet18(pretrained=True)
     elif model_ver == 50:
@@ -228,12 +206,10 @@ def attention_map(model_ver,test_loader,datatype):
 
     model.eval()
 
-    # ------------------ 提取图像 ------------------
     image, label = next(iter(test_loader))
     image = image[0].unsqueeze(0).to(device)
     label = label[0].unsqueeze(0).to(device)
 
-    # ------------------ 注册hook提取layer4输出 ------------------
     feature_map = []
 
     def hook_fn(module, input, output):
@@ -241,28 +217,24 @@ def attention_map(model_ver,test_loader,datatype):
 
     hook = model.layer4.register_forward_hook(hook_fn)
 
-    # ------------------ 前向传播 ------------------
     output = model(image)
     _, preds = torch.max(output, 1)
 
-    # ------------------ 获取 feature map 和 fc 权重 ------------------
     feature_map = feature_map[0].squeeze(0).cpu().detach().numpy()  # shape: [C, H, W]
     fc_weights = model.fc.weight[preds.item()].cpu().detach().numpy()  # shape: [C]
 
-    # ------------------ 计算 CAM ------------------
     cam = np.zeros(feature_map.shape[1:], dtype=np.float32)  # shape: [H, W]
     for i, w in enumerate(fc_weights):
         cam += w * feature_map[i, :, :]
 
     cam = np.maximum(cam, 0)
     cam = cv2.resize(cam, (224, 224))
-    cam = cam / cam.max()  # 归一化
+    cam = cam / cam.max()
 
-    # ------------------ 可视化 ------------------
     img = image[0].cpu().detach().numpy().transpose(1, 2, 0)
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
-    img = std * img + mean  # 反标准化
+    img = std * img + mean
     img = np.clip(img, 0, 1)
 
     plt.imshow(img)

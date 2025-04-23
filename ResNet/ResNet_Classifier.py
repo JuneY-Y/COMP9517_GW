@@ -17,17 +17,12 @@ def extract_features(model,loader):
     with torch.no_grad():
         for imgs, lbls in loader:
             imgs = imgs.to(device)
-            output = model(imgs)  # 输出的特征向量维度通常为 2048（ResNet50 默认）
-            features.append(output.cpu())  # 留在 torch 格式
-            labels.extend(lbls.numpy())    # 先放 numpy，再转成 tensor
+            output = model(imgs)
+            features.append(output.cpu())
+            labels.extend(lbls.numpy())
     features = torch.cat(features, dim=0)
     labels = torch.tensor(labels)
     return features, labels
-    #         features.append(output.cpu().numpy())
-    #         labels.extend(lbls.numpy())
-    # features = np.concatenate(features, axis=0)
-    # labels = np.array(labels)
-    # return features, labels
 
 class MLPClassifier(nn.Module):
     def __init__(self, input_dim=2048, hidden_dim=512, num_classes=15, dropout=0.5):
@@ -69,11 +64,11 @@ def train_MLP(train_features, train_labels, test_features, num_classes=15):
 class ProtoNetClassifier:
     def __init__(self, n_classes):
         self.n_classes = n_classes
-        self.prototypes = None  # 原型向量，每类一个
+        self.prototypes = None
 
     def compute_prototypes(self, features, labels):
         """
-        根据训练特征和标签计算每个类的原型（均值）
+        compute the prototypes (mean) of each class
         """
         prototypes = []
         for c in range(self.n_classes):
@@ -84,9 +79,9 @@ class ProtoNetClassifier:
 
     def predict(self, features):
         """
-        根据欧氏距离判断所属类别
+        predict the class of each sample
         """
-        dists = torch.cdist(features, self.prototypes)  # 计算距离 [N, C]
+        dists = torch.cdist(features, self.prototypes)
         preds = dists.argmin(dim=1)
         return preds
 
@@ -98,10 +93,10 @@ def classifierTrain(model_ver, train_loader, test_loader, classifier):
     elif model_ver==101:
         model = models.resnet101(weights=models.ResNet101_Weights.DEFAULT)
         
-    model.fc = nn.Identity()  # 用 Identity 替换全连接层，输出即为特征
+    model.fc = nn.Identity()  # using Identity instead of fc layer
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)
-    model.eval()  # 关闭 Dropout、BatchNorm 的训练行为
+    model.eval()
     torch.manual_seed(42)
     
     train_features, train_labels = extract_features(model,train_loader)
@@ -122,15 +117,14 @@ def classifierTrain(model_ver, train_loader, test_loader, classifier):
         classifier.compute_prototypes(train_features, train_labels)
         predictions = classifier.predict(test_features)
     
-    # 在测试集上预测并评估
+    # test
     accuracy = accuracy_score(test_labels, predictions)
     msg = "ResNet" + str(model_ver) + " " + str(classifier) + " Test Accuracy:" + str(accuracy);
     print(msg)
     
-    # 输出 classification_report
+    # results
     print("\n📊 Classification Report:")
     print(classification_report(test_labels, predictions, digits=4))
     
-    # 输出混淆矩阵
     print("🔍 Confusion Matrix:")
     print(confusion_matrix(test_labels, predictions))
