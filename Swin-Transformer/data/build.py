@@ -1,10 +1,3 @@
-# --------------------------------------------------------
-# Swin Transformer
-# Copyright (c) 2021 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Ze Liu
-# --------------------------------------------------------
-
 import os
 import torch
 import numpy as np
@@ -15,6 +8,7 @@ from timm.data import Mixup
 from timm.data import create_transform
 from PIL import Image
 from torchvision.transforms import TrivialAugmentWide
+from .samplers import SubsetRandomSampler
 import random
 
 try:
@@ -109,17 +103,16 @@ def build_loader(config):
 
 
 
-
 def build_dataset(is_train, config, prefix=None):
     transform = build_transform(is_train, config)
+
     if config.DATA.DATASET == 'imagenet':
-        # 如果没有指定 prefix，就按原逻辑判断
         if prefix is None:
             prefix = 'train' if is_train else 'val'
-        else:
-            root = os.path.join(config.DATA.DATA_PATH, prefix)
-            dataset = datasets.ImageFolder(root, transform=transform)
+        root = os.path.join(config.DATA.DATA_PATH, prefix)  # ✅ 注意：放在 if 之后，统一处理
+        dataset = datasets.ImageFolder(root, transform=transform)
         nb_classes = 15
+
     else:
         raise NotImplementedError("We only support ImageNet Now.")
 
