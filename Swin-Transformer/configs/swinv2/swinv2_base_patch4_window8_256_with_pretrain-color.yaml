@@ -8,8 +8,8 @@ MODEL:
   NUM_CLASSES: 15
   SWINV2:
     EMBED_DIM: 128
-    DEPTHS: [ 2, 2, 18, 2 ]
-    NUM_HEADS: [ 4, 8, 16, 32 ]
+    DEPTHS: [2, 2, 18, 2]
+    NUM_HEADS: [4, 8, 16, 32]
     WINDOW_SIZE: 8
 AMP_ENABLE: False
 TRAIN:
@@ -18,29 +18,28 @@ TRAIN:
   ACCUMULATION_STEPS: 1
   BASE_LR: 5e-04
   WARMUP_EPOCHS: 10
-  WARMUP_LR: 5e-06               # 调整后的 warmup lr
+  WARMUP_LR: 5e-06
   MIN_LR: 1e-07
-  WEIGHT_DECAY: 1e-5             # 注意：这个值较小，如训练时发现过拟合可适当提高（例如1e-4）
+  WEIGHT_DECAY: 1e-5
   LR_SCHEDULER:
     NAME: cosine
     DECAY_EPOCHS: 100
     DECAY_RATE: 0.1
     WARMUP_PREFIX: true
-
 AUG:
-  AUTO_AUGMENT: null       # 关闭自动数据增强
-  COLOR_JITTER: 0.2        # 关闭颜色抖动
-  CUTMIX: 0.0              # 关闭 CutMix
-  CUTMIX_MINMAX: null      # 无需设置，已关闭 CutMix
-  MIXUP: 0.0               # 关闭 MixUp
-  MIXUP_MODE: batch      # 保持默认值，无影响
-  MIXUP_PROB: 0.0          # 关闭 MixUp 的应用概率
-  MIXUP_SWITCH_PROB: 0.0   # 关闭 MixUp 与 CutMix 的切换概率
-  REPROB: 0.0              # 关闭随机擦除
-  REMODE: pixel          # 保持默认值，无影响
-  RECOUNT: 0               # 关闭随机擦除的次数
+  AUTO_AUGMENT: null
+  COLOR_JITTER: 0.2
+  CUTMIX: 0.0
+  CUTMIX_MINMAX: null
+  MIXUP: 0.0
+  MIXUP_MODE: batch
+  MIXUP_PROB: 0.0
+  MIXUP_SWITCH_PROB: 0.0
+  REPROB: 0.0
+  REMODE: pixel
+  RECOUNT: 0
   RANDOM_OCCLUSION:
-    ENABLE: False         # 是否启用随机遮挡
-    NUM_BLOCKS: 1         # 遮挡块的数量
-    BLOCK_SIZE: 32        # 每个遮挡块的大小
-    PROB: 0.3             # 应用遮挡的概率
+    ENABLE: False
+    NUM_BLOCKS: 1
+    BLOCK_SIZE: 32
+    PROB: 0.3

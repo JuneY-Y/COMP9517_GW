@@ -4,20 +4,20 @@ import random
 from pathlib import Path
 from collections import defaultdict
 
-# 设置随机种子
+# Set random seed for reproducibility
 random.seed(42)
 
-# 参数
+# Parameters
 original_dir = Path("Aerial_Landscapes")
 output_dir = Path("datasets_longtail")
 train_ratio, val_ratio = 0.7, 0.15
-imbalance_factor = 10  # 长尾不平衡因子，越大代表尾部越少样本
+imbalance_factor = 10  # The long-tail imbalance factor; larger means fewer samples in tail classes
 
-# 第一步：创建基础文件夹结构
+# Step 1: Create the directory structure for train / val / test splits
 for split in ['train', 'val', 'test']:
     (output_dir / split).mkdir(parents=True, exist_ok=True)
 
-# 第二步：先正常划分 train / val / test
+# Step 2: Perform an initial split into train / val / test
 image_records = defaultdict(dict)
 
 for class_dir in original_dir.iterdir():
@@ -33,27 +33,26 @@ for class_dir in original_dir.iterdir():
         image_records[class_dir.name]['val'] = images[n_train:n_train + n_val]
         image_records[class_dir.name]['test'] = images[n_train + n_val:]
 
-        # 先复制 val 和 test，保留 train 做采样
+        # Copy val and test images directly; keep train for sampling
         for split in ['val', 'test']:
             target_dir = output_dir / split / class_dir.name
             target_dir.mkdir(parents=True, exist_ok=True)
             for img_path in image_records[class_dir.name][split]:
                 shutil.copy(img_path, target_dir / img_path.name)
 
-# 第三步：对 train 执行长尾采样并复制
-# 根据最大类的图像数量，依次按 rank 分配不平衡样本数
+# Step 3: Apply long-tail sampling to train set
 class_names = sorted(image_records.keys())
 class_sizes = {cls: len(image_records[cls]['train']) for cls in class_names}
 max_count = max(class_sizes.values())
 num_classes = len(class_names)
 
-# 计算每类目标采样数量（长尾分布）
+# Determine the desired sample count for each class using exponential decay
 desired_train_counts = {
     cls: max(int(max_count * (1 / imbalance_factor) ** (rank / (num_classes - 1))), 1)
     for rank, cls in enumerate(sorted(class_names, key=lambda x: class_sizes[x], reverse=True))
 }
 
-# 采样并复制
+# Sample and copy images for train set based on long-tail distribution
 for cls in class_names:
     images = image_records[cls]['train']
     target_count = min(len(images), desired_train_counts[cls])
@@ -64,6 +63,6 @@ for cls in class_names:
     for img_path in sampled_images:
         shutil.copy(img_path, target_dir / img_path.name)
 
-    print(f"[{cls}] 原始: {len(images)}, 采样后: {len(sampled_images)}, val: {len(image_records[cls]['val'])}, test: {len(image_records[cls]['test'])}")
+    print(f"[{cls}] original: {len(images)}, sampled: {len(sampled_images)}, val: {len(image_records[cls]['val'])}, test: {len(image_records[cls]['test'])}")
 
-print("✅ Dataset split with long-tail train set complete.")
+print("Dataset split with long-tail train set complete.")

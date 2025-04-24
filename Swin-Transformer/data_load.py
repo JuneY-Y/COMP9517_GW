@@ -39,4 +39,4 @@ for class_dir in original_dir.iterdir():
             for img_path in imgs:
                 shutil.copy(img_path, target_dir / img_path.name)
 
-print("✅ Dataset split complete.")
+print("Dataset split complete.")

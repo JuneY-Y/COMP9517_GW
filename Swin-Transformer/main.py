@@ -1,19 +1,9 @@
-# --------------------------------------------------------
-# Swin Transformer (Single-GPU Version: Distributed Disabled)
-# Copyright (c) 2021 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Ze Liu
-# --------------------------------------------------------
-
 import os
 import time
 import json
 import random
 import argparse
 import datetime
-import numpy as np
-from collections import Counter
-from pytorch_toolbelt import losses
 from sklearn.utils.class_weight import compute_class_weight
 import torch
 import torch.backends.cudnn as cudnn
@@ -33,9 +23,8 @@ from logger import create_logger
 from utils import load_checkpoint, load_pretrained, save_checkpoint, NativeScalerWithGradNormCount, auto_resume_helper
 import warnings
 
-# 禁用 FutureWarning
 warnings.filterwarnings("ignore", category=FutureWarning, message="Importing from timm.layers is deprecated")
-# 禁用 apex 警告
+
 warnings.filterwarnings("ignore", message="To use FusedLAMB or FusedAdam, please install apex.")
 
 PYTORCH_MAJOR_VERSION = int(torch.__version__.split('.')[0])
@@ -78,7 +67,6 @@ def parse_option():
 
 
 def main(config):
-    # 构建数据集和数据加载器
     dataset_train, dataset_val, dataset_test, data_loader_train, data_loader_val, data_loader_test, mixup_fn = build_loader(config)
     
     if config.LOSS.CLASS_WEIGHTS is None:
@@ -90,8 +78,7 @@ def main(config):
         config.defrost()
         config.LOSS.CLASS_WEIGHTS = class_weights.tolist()
         config.freeze()
-    
-    # 保存类别映射
+
     with open(os.path.join(config.OUTPUT, "class_to_idx.json"), "w") as f:
         json.dump(dataset_train.class_to_idx, f)
     
@@ -99,24 +86,21 @@ def main(config):
     model = build_model(config)
     logger.info(str(model))
 
-    
-    # 无论是否 resume，都强制替换分类头（防止 pretrained 权重残留）
+
     if config.MODEL.PRETRAINED and (not config.MODEL.RESUME):
         load_pretrained(config, model, logger)
     if hasattr(model, 'head'):
-        # 获取原 head 的输入特征数，例如1536
         in_features = model.head.in_features
-        logger.info(f"🚨 BEFORE REPLACE: config.MODEL.NUM_CLASSES = {config.MODEL.NUM_CLASSES}")
-        # 替换 head 为输出15类的新层
+        logger.info(f"BEFORE REPLACE: config.MODEL.NUM_CLASSES = {config.MODEL.NUM_CLASSES}")
         model.head = torch.nn.Linear(in_features, 15).cuda()
         config.defrost()
         config.MODEL.NUM_CLASSES = 15
         config.freeze()
-        logger.info(f"✅ Final model.head replaced: {in_features} → {config.MODEL.NUM_CLASSES}")
+        logger.info(f"Final model.head replaced: {in_features} → {config.MODEL.NUM_CLASSES}")
     else:
-        raise RuntimeError("🚨 model has no attribute 'head', cannot replace classifier head!")
+        raise RuntimeError("model has no attribute 'head', cannot replace classifier head!")
 
-    logger.info(f"🔍 model.head final shape: {model.head}")
+    logger.info(f"model.head final shape: {model.head}")
     
     n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
     logger.info(f"number of params: {n_parameters}")
@@ -157,10 +141,9 @@ def main(config):
         logger.info("Using AsymmetricLossSingleLabel as loss.")
 
     max_accuracy = 0.0
-    # 用于存储每个 epoch 的评估指标，以便最后保存到 CSV
     epoch_metrics = []
     early_stop_patience = config.TRAIN.EARLY_STOP_PATIENCE if hasattr(config.TRAIN, 'EARLY_STOP_PATIENCE') else 10
-    no_improve_epochs = 0  # 连续没有提升的 epoc
+    no_improve_epochs = 0
     
     if config.TRAIN.AUTO_RESUME:
         resume_file = auto_resume_helper(config.OUTPUT)
@@ -176,7 +159,6 @@ def main(config):
 
     if config.MODEL.RESUME:
         max_accuracy = load_checkpoint(config, model_without_ddp, optimizer, lr_scheduler, loss_scaler, logger)
-        # 不再重新替换 head，假设训练保存的 checkpoint 已经正确设置了 head
         acc1, acc5, val_loss, macro_f1, macro_recall = validate(config, data_loader_val, model, criterion)
         logger.info(f"Validation Accuracy (from resumed checkpoint): {acc1:.1f}%")
         if config.EVAL_MODE:
@@ -185,7 +167,6 @@ def main(config):
             logger.info(f"[TEST SET] Accuracy@1: {acc1_test:.2f}%, Accuracy@5: {acc5_test:.2f}%, Loss: {test_loss:.4f}")
             logger.info(f"[TEST SET] Macro-F1: {macro_f1_test:.4f}, Macro-Recall: {macro_recall_test:.4f}")
             return
-        # 保存初始的 epoch=resume 之前的评估结果
         epoch_metrics.append({
             "epoch": config.TRAIN.START_EPOCH - 1,
             "val_loss": val_loss,
@@ -210,7 +191,6 @@ def main(config):
         train_one_epoch(config, model, criterion, data_loader_train, optimizer, epoch, mixup_fn, lr_scheduler, loss_scaler)
         acc1, acc5, val_loss, macro_f1, macro_recall = validate(config, data_loader_val, model, criterion)
         logger.info(f"Epoch {epoch}: Validation Accuracy: {acc1:.1f}% on {len(dataset_val)} images, Loss: {val_loss:.4f}, Macro-F1: {macro_f1:.4f}, Macro-Recall: {macro_recall:.4f}")
-        # 记录该 epoch 的指标
         epoch_metrics.append({
             "epoch": epoch,
             "val_loss": val_loss,
@@ -232,7 +212,6 @@ def main(config):
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     logger.info('Training time {}'.format(total_time_str))
 
-    # 保存每个 epoch 的指标到 CSV 文件
     metrics_csv_path = os.path.join(config.OUTPUT, "epoch_metrics.csv")
     df = pd.DataFrame(epoch_metrics)
     df.to_csv(metrics_csv_path, index=False)
@@ -363,13 +342,13 @@ def validate(config, data_loader, model, criterion):
     macro_f1 = cls_report['macro avg']['f1-score']
     macro_recall = cls_report['macro avg']['recall']
 
-    # 保存混淆矩阵到 CSV
+
     cm_df = pd.DataFrame(cm, index=range(config.MODEL.NUM_CLASSES), columns=range(config.MODEL.NUM_CLASSES))
     cm_csv_path = os.path.join(config.OUTPUT, "confusion_matrix.csv")
     cm_df.to_csv(cm_csv_path)
     logger.info(f"Confusion matrix saved to {cm_csv_path}")
 
-    # 保存混淆矩阵图像
+
     fig, ax = plt.subplots(figsize=(8, 8))
     sns.heatmap(cm_df, annot=True, fmt="d", cmap="Blues", ax=ax)
     plt.xlabel("Predicted")

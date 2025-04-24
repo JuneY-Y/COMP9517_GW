@@ -93,4 +93,4 @@ plt.tight_layout()
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 plt.close()
 
-print(f"✅ Saved overlay-only image to {output_path}")
+print(f"Saved overlay-only image to {output_path}")

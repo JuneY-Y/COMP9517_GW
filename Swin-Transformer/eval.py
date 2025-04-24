@@ -22,10 +22,10 @@ for root, dirs, files in os.walk(OUTPUT_ROOT):
             cfg_path = os.path.join(CONFIG_BASE, f"{folder}.yaml")
 
             if not os.path.exists(cfg_path):
-                print(f"⚠️ Config not found for: {folder}, skipping.")
+                print(f"Config not found for: {folder}, skipping.")
                 continue
 
-            print(f"🚀 Evaluating: {folder}")
+            print(f" Evaluating: {folder}")
             cmd = [
                 "python", "main.py",
                 "--cfg", cfg_path,

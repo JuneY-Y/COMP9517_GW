@@ -22,7 +22,6 @@ try:
         elif method == 'hamming':
             return InterpolationMode.HAMMING
         else:
-            # default bilinear, do we want to allow nearest?
             return InterpolationMode.BILINEAR
 
     import timm.data.transforms as timm_transforms
@@ -31,13 +30,11 @@ except:
     from timm.data.transforms import _pil_interp
 
 
-# ----------------------- 固定 Worker 随机种子 -----------------------
+# Set random seed for reproducibility across workers
 def worker_init_fn(worker_id):
-    # 使用一个全局种子加上 worker_id 确保每个 worker 的随机性固定
-    base_seed = 42   # 此处可改为 config.SEED，如果 config 提供种子
+    base_seed = 42
     np.random.seed(base_seed + worker_id)
     random.seed(base_seed + worker_id)
-# -----------------------------------------------------------------
 
 
 def build_loader(config):
@@ -50,7 +47,6 @@ def build_loader(config):
     print("Successfully built val dataset")
     print("Successfully built test dataset")
 
-    # 训练集使用随机采样；验证集和测试集使用顺序采样
     sampler_train = torch.utils.data.RandomSampler(dataset_train)
     sampler_val = torch.utils.data.SequentialSampler(dataset_val)
     sampler_test = torch.utils.data.SequentialSampler(dataset_test)
@@ -84,23 +80,21 @@ def build_loader(config):
         worker_init_fn=worker_init_fn
     )
 
-    # setup mixup / cutmix
     mixup_fn = None
     mixup_active = config.AUG.MIXUP > 0 or config.AUG.CUTMIX > 0. or config.AUG.CUTMIX_MINMAX is not None
     if mixup_active:
         mixup_fn = Mixup(
-            mixup_alpha=config.AUG.MIXUP, 
-            cutmix_alpha=config.AUG.CUTMIX, 
+            mixup_alpha=config.AUG.MIXUP,
+            cutmix_alpha=config.AUG.CUTMIX,
             cutmix_minmax=config.AUG.CUTMIX_MINMAX,
-            prob=config.AUG.MIXUP_PROB, 
-            switch_prob=config.AUG.MIXUP_SWITCH_PROB, 
+            prob=config.AUG.MIXUP_PROB,
+            switch_prob=config.AUG.MIXUP_SWITCH_PROB,
             mode=config.AUG.MIXUP_MODE,
-            label_smoothing=config.MODEL.LABEL_SMOOTHING, 
+            label_smoothing=config.MODEL.LABEL_SMOOTHING,
             num_classes=config.MODEL.NUM_CLASSES
         )
 
     return dataset_train, dataset_val, dataset_test, data_loader_train, data_loader_val, data_loader_test, mixup_fn
-
 
 
 def build_dataset(is_train, config, prefix=None):
@@ -109,10 +103,9 @@ def build_dataset(is_train, config, prefix=None):
     if config.DATA.DATASET == 'imagenet':
         if prefix is None:
             prefix = 'train' if is_train else 'val'
-        root = os.path.join(config.DATA.DATA_PATH, prefix)  # ✅ 注意：放在 if 之后，统一处理
+        root = os.path.join(config.DATA.DATA_PATH, prefix)
         dataset = datasets.ImageFolder(root, transform=transform)
         nb_classes = 15
-
     else:
         raise NotImplementedError("We only support ImageNet Now.")
 
@@ -144,11 +137,11 @@ class RandomBlockOcclusion:
             img[top:top + self.block_size, left:left + self.block_size, :] = fill
 
         return Image.fromarray(img.astype(np.uint8))
-        
+
+
 def build_transform(is_train, config):
     resize_im = config.DATA.IMG_SIZE > 32
     if is_train:
-        # 使用 create_transform 构造训练数据变换流水线
         transform = create_transform(
             input_size=config.DATA.IMG_SIZE,
             is_training=True,
@@ -159,25 +152,21 @@ def build_transform(is_train, config):
             re_count=config.AUG.RECOUNT,
             interpolation=config.DATA.INTERPOLATION,
         )
-        
-        # ✅ 如果启用 TrivialAugmentWide，插入到增强管道中
+
         if getattr(config.AUG, "TRIVIAL_AUGMENT", False):
             transform.transforms.insert(1, TrivialAugmentWide())
 
-        # ✅ 随机遮挡增强
         if getattr(config.AUG, "RANDOM_OCCLUSION", None) is not None and config.AUG.RANDOM_OCCLUSION.ENABLE:
             transform.transforms.insert(2, transforms.RandomApply(
                 [RandomBlockOcclusion(num_blocks=config.AUG.RANDOM_OCCLUSION.NUM_BLOCKS,
-                                       block_size=config.AUG.RANDOM_OCCLUSION.BLOCK_SIZE)], 
+                                      block_size=config.AUG.RANDOM_OCCLUSION.BLOCK_SIZE)],
                 p=config.AUG.RANDOM_OCCLUSION.PROB))
 
-        # ✅ 图像小于 32 时使用 RandomCrop
         if not resize_im:
             transform.transforms[0] = transforms.RandomCrop(config.DATA.IMG_SIZE, padding=4)
 
         return transform
 
-    # ===== 测试增强 =====
     t = []
     if resize_im:
         if config.TEST.CROP:
@@ -186,7 +175,7 @@ def build_transform(is_train, config):
             t.append(transforms.CenterCrop(config.DATA.IMG_SIZE))
         else:
             t.append(transforms.Resize((config.DATA.IMG_SIZE, config.DATA.IMG_SIZE),
-                                        interpolation=_pil_interp(config.DATA.INTERPOLATION)))
+                                       interpolation=_pil_interp(config.DATA.INTERPOLATION)))
 
     t.append(transforms.ToTensor())
     t.append(transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD))
