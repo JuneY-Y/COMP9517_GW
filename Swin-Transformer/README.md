@@ -41,16 +41,37 @@ Swin-Transformer/
 
 ---
 
+
+##  Dataset Structure
+
+```
+Swin-Transformer/
+├── main.py
+├── config.py
+├── create_attention.py
+├── logger.py
+├── lr_scheduler.py
+├── optimizer.py
+├── utils.py
+│
+├── Dataset/
+    ├── train
+    ├── val 
+    └── test
+```
+
+
+---
+
 ##  Training
 
 ```bash
-python main.py \
-  --cfg configs/swinv2/swinv2_base_patch4_window8_256_with_pretrain-ft.yaml \
-  --data-path /path/to/aerial15 \
-  --output output/swinv2 \
-  --pretrained /path/to/pretrained.pth \
-  --tag exp_name \
-  --amp-opt-level O1
+python main.py --cfg configs/swinv2/swinv2_base_patch4_window8_256.yaml \
+              --data-path YOUR PATH TO DATASETS \
+              --batch-size 56 \
+              --optim adamw \
+              --pretrained your_pretrained_PATH.pth \
+              --output outputs/swinv2_base_patch4_window8_256
 ```
 
 ---
