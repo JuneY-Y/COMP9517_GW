@@ -18,7 +18,7 @@ This is an implementation of traditional machine learning methods. The focus is 
 ### 1. `ml_image_augmentation.py`
 - Implements contrast enhancement using CLAHE
 - Applies image sharpening via unsharp masking
-- Creates custom augmentations (occlusions, color jitters, rotations, flips, occlusion)
+- Creates custom augmentations (brightness, rotations, flips, occlusions)
 - Provides dataset and dataloader creation utilities
 
 ### 2. `ml_feature_extractor.py`
@@ -43,16 +43,13 @@ This is an implementation of traditional machine learning methods. The focus is 
   - Ensemble (Stacking, Voting)
   - Unsupervised (K-means, GMM)
 - Performs hyperparameter optimization
-- Creates feature space visualizations
 - Evaluates model performance metrics
+- Adaptability to data perturbation experiments
 
-## Experiments
+### 6. `ml_modelling_imbalance.py`
 
-- **Feature Comparison**: Combined Color SIFT + LBP vs. individual feature types
-- **Classifier Evaluation**: Systematic comparison across multiple algorithms
-- **Ensemble Approaches**: Voting and stacking strategies for improved performance
-- **Feature Visualization**: t-SNE embedding of the feature space
-
+- Adapts `ml_modelling.py` to handle class imbalance
+- 
 ## Usage
 
 Run the main pipeline with:
