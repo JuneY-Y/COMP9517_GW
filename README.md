@@ -47,28 +47,28 @@ We implemented, trained, and compared 20+ model variants, evaluated over 3 bench
 
 ## 💡 Main Experiments Breakdown
 
-### [📁 Traditional Machine Learning](./Machine%20Learning/README.md)
+### [📁 Traditional Machine Learning](./Machine%20Learning/)
 - 10 classifiers × 6 PCA settings
 - Extracted Color-LBP + Color-SIFT features
 - Conducted 414 hyperparameter-PCA pipelines
 - Benchmarked with perturbation and long-tail variants
 
-### [📁 YOLOv8 Variants](./YOLO/README.md)
+### [📁 YOLOv8 Variants](./YOLO/)
 - C2f vs. C3, SPPF vs. SPP, Anchor-Free vs. Anchor-Based
 - SE/CBAM Attention, ViT-Backbone hybrid
 - KL Consistency, MixUp, Mosaic, LMA, etc.
 
-### [📁 ResNet Backbone + Classifier Swaps](./ResNet/README.md)
+### [📁 ResNet Backbone + Classifier Swaps](./ResNet/)
 - Compared fc, SVM, MLP, KNN, ProtoNet
 - Re-sampling for imbalance
 - Perturbation-aware retraining
 
-### [📁 ViT (Base)](./VIT%20model/README.md)
+### [📁 ViT (Base)](./VIT%20model/)
 - Position Encoding and Transformer Layer Ablation
 - Two-Stage Training
 - LMA for perturbation robustness
 
-### [📁 Swin Transformer V2](./Swin-Transformer/README.md)
+### [📁 Swin Transformer V2](./Swin-Transformer/)
 - Fine-tuned with 7 augmentation strategies
 - Tested StepLR, Full Aug, and Tiny variant
 - Ablated depth, shift-windows, window size
