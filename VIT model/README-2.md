@@ -16,21 +16,6 @@ This is an implementation of VIT base model.
 ├── heatmap.py             
 ├── test.py
 ```
-## dataset
-
-datasets/
-├── train/
-│   ├── Beach/xxx.jpg
-│   ├── Forest/...
-│   └── ...
-├── val/  
-│   ├── Beach/xxx.jpg
-│   ├── Forest/...
-│   └── ...    
-└── test/
-│   ├── Beach/xxx.jpg
-│   ├── Forest/...
-│   └── ...
 
 ## Main Components
 
