@@ -46,16 +46,16 @@ This is an implementation of VIT base model.
 - Positional-embedding ablation - zeroes the pos_embed tensor to test how much ViT relies on positional info.
 
 
-### 6. `resnet_ablation.py`
+### 7. `resnet_ablation.py`
 
 - A script that disables the residual (skip) connections in chosen ViT-Base transformer blocks 
   and measures how each removal affects classification accuracy on the test set.
 
-### 6. `heatmap.py`
+### 8. `heatmap.py`
 
 - Feature visualizer - hooks ViT activations, turns them into Jet heat-maps, and overlays them on the original image.
 
-### 6. `test.py`
+### 9. `test.py`
 
 - use to generate outcome
 
