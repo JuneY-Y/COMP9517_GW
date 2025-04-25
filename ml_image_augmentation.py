@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Apr  4 23:29:21 2025
-
-@author: MIS
-"""
-
 import cv2
 import os
 import numpy as np
@@ -375,7 +368,7 @@ if __name__ == "__main__":
     # Example: Generate augmentations for a single image
     
     # Load an example image
-    img_path = "datasets/train/Airport/121.jpg"
+    img_path = "datasets/test/Beach/009.jpg"
     if os.path.exists(img_path):
         # Visualize augmentations
         visualize_augmentations(img_path, n_augmentations=5, use_occlusion=True)
