@@ -51,3 +51,6 @@ This project explores image classification using different ResNet backbones (Res
 - **Classification Heads**: SVM performs best in most settings
 - **Long-Tail Handling**: Evaluated under re-sampling and re-weighting
 - **Robustness Test**: Models tested under various perturbation levels (mild, medium, strong)
+
+## Usage
+- All usages are shown in ResNet_Model.ipynb, please click to view for details
