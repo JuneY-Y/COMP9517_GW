@@ -876,7 +876,7 @@ def main(sample_size=None, feature_type='sift', n_augmentations=5, batch_size=32
             print(f"Error evaluating {model_type}: {e}")
             continue
     
-    # Step 11: Compare final results
+    # Step 11: Compare final results (optional)
     print("\n===== FINAL MODEL COMPARISON (TEST SET) =====")
     for model_type, result in sorted(results.items(), key=lambda x: x[1]['accuracy'], reverse=True):
         print(f"{model_type}: Test Accuracy = {result['accuracy']:.4f}")
@@ -884,37 +884,6 @@ def main(sample_size=None, feature_type='sift', n_augmentations=5, batch_size=32
             print(f"  Parameters: {result['params']['model_params']}")
         else:
             print(f"  Parameters: {result['params']}")
-    
-    # Step 12: Visualize feature space using t-SNE (optional)
-    try:
-        print("\nStep 12: Visualizing feature space with t-SNE...")
-        # Apply PCA first to reduce dimensionality (for faster t-SNE)
-        pca = PCA(n_components=min(50, X_test.shape[1]))
-        X_pca = pca.fit_transform(X_test)
-        
-        # Apply t-SNE
-        tsne = TSNE(n_components=2, random_state=42)
-        X_tsne = tsne.fit_transform(X_pca)
-        
-        # Plot t-SNE visualization
-        plt.figure(figsize=(12, 10))
-        for class_idx in np.unique(y_test):
-            # Get data points for this class
-            mask = y_test == class_idx
-            plt.scatter(
-                X_tsne[mask, 0], X_tsne[mask, 1],
-                label=class_indices.get(class_idx, f'Class {class_idx}'),
-                alpha=0.7
-            )
-        
-        plt.title('t-SNE Visualization of Feature Space')
-        plt.legend()
-        plt.savefig('feature_space_tsne.png', dpi=300)
-        plt.show()
-    except Exception as e:
-        print(f"Error creating t-SNE visualization: {e}")
-    
-    return results
 
 # ---------------------- Script Execution ----------------------
 
