@@ -11,6 +11,7 @@ This is an implementation of traditional machine learning methods. The focus is 
 ├── ml_color_sift.py             # SIFT feature extraction in multiple color spaces
 ├── ml_color_lbp.py              # Multi-scale LBP feature extraction
 ├── ml_modelling.py              # ML model training, evaluation and ensemble creation
+├── ml_modelling_imbalance.py    # Adapts ML modelling to handle class imbalance 
 ```
 
 ## Main Components
