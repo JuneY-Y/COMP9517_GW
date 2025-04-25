@@ -58,11 +58,6 @@ Run the main pipeline with:
 from ml_modelling import main
 # or from ml_modelling_imbalance import main
 
-# Full dataset
 results = main(sample_size=None, feature_type='combined', batch_size=32)
 
-# Quick test
-results = main(sample_size=100, feature_type='combined', batch_size=16)
-```
-
-The model requires a dataset organized in train/val/test folders with class subfolders.
+Implementation expects a dataset structured in standard ML cross-validation format (train/val/test directories with class-specific subfolders), which can be automatically generated using the data preprocessing scripts in the main repository.
