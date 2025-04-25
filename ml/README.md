@@ -59,5 +59,5 @@ from ml_modelling import main
 # or from ml_modelling_imbalance import main
 
 results = main(sample_size=None, feature_type='combined', batch_size=32)
-
+```
 Implementation expects a dataset structured in standard ML cross-validation format (train/val/test directories with class-specific subfolders), which can be automatically generated using the data preprocessing scripts in the main repository.
