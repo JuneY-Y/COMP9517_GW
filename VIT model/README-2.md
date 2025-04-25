@@ -5,7 +5,6 @@ This is an implementation of VIT base model.
 ## Project Structure
 
 ```
-.1
 ├── baselinetrain.py       
 ├── twostage.py           
 ├── longtailtrain.py      
