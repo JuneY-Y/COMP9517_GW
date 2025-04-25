@@ -46,7 +46,7 @@ We implemented, trained, and compared 20+ model variants, evaluated over 3 bench
 ---
 
 ## 💡 Main Experiments Breakdown
-
+For detailed configurations of each model, please refer to the corresponding model folder.
 ### [📁 Traditional Machine Learning](./Machine%20Learning/)
 - 10 classifiers × 6 PCA settings
 - Extracted Color-LBP + Color-SIFT features
