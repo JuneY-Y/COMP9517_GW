@@ -49,12 +49,13 @@ This is an implementation of traditional machine learning methods. The focus is 
 ### 6. `ml_modelling_imbalance.py`
 
 - Adapts `ml_modelling.py` to handle class imbalance
-- 
+
 ## Usage
 
 Run the main pipeline with:
 ```python
 from ml_modelling import main
+# or from ml_modelling_imbalance import main
 
 # Full dataset
 results = main(sample_size=None, feature_type='combined', batch_size=32)
