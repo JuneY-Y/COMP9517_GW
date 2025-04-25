@@ -71,13 +71,19 @@ Each script (e.g., model_attention.py, model_melt_v2_sgd.py) represents one expe
 
 📆 Folder Structure
 
-project/
-├── model_*.py                    # 20+ model variants (C3, SPP, ViT, Attention...)
-├── modules/                      # Custom layers like SPP
-├── models/                       # Custom YOLOv8 yaml configs
-├── datasets/                     # Aerial classification dataset (train/val/test)
-├── results/                      # Accuracy, F1, recall, confusion matrix outputs
+### 📁 Folder Structure Overview
 
+| Folder/File          | Description                                                  |
+|----------------------|--------------------------------------------------------------|
+| `project/`           | Root directory of the project                                |
+| ├── `model_*.py`     | 20+ model variants: C3, SPP, ViT, Attention, etc.            |
+| ├── `modules/`       | Custom modules (e.g., SPP, CBAM, SE)                         |
+| ├── `models/`        | YOLOv8 classification configs (`.yaml`)                      |
+| ├── `datasets/`      | Aerial classification dataset: `train/`, `val/`, `test/`     |
+| ├── `results/`       | Evaluation outputs: accuracy, F1-score, confusion matrix     |
+| ├── `predict.py`     | Inference script for testing trained models                  |
+| ├── `requirements.txt` | Python package dependencies                              |
+| ├── `README.md`      | Project description (this file)                              |
 
 
 ⸻
