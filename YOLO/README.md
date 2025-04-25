@@ -71,7 +71,6 @@ Each script (e.g., model_attention.py, model_melt_v2_sgd.py) represents one expe
 
 📆 Folder Structure
 
-### 📁 Folder Structure Overview
 
 | Folder/File          | Description                                                  |
 |----------------------|--------------------------------------------------------------|
