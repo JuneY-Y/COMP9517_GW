@@ -59,10 +59,20 @@ This repository is a complete experimental toolkit for remote-sensing scene clas
 
 - use to generate outcome
 
-## Usage
+#### Usage
 
-```python
+- In each script file you only need to adjust the hyper-parameters, for example:
+- train_ds = datasets.ImageFolder('datasets/train', transform=train_tf)
+  val_ds   = datasets.ImageFolder('datasets/test',  transform=val_tf)
+  in this case you need to fill in the complete file paths.
+- SAVE_PATH = 'best_model.pth'
+  in this case you need to fill in the weights save path.
+- WEIGHTS_PATH = 'best_model.pth'
+  in this case you need to fill in the weights path.
+- There are also several other hyper-parameters you may want to tweak, such as:
+  criterion, optimizer, NUM_EPOCHS and so on, you can adjust it when need.
+  
+  
 
-```
 
-The model requires a dataset organized in train/val/test folders with class subfolders.
+
