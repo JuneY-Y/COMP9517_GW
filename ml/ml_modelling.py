@@ -489,85 +489,6 @@ def try_hyperparameters(X_train, y_train, X_val, y_val, model_type, class_names,
                 print(f"  Error with {model_type} {params}, {pca_str}: {e}")
                 continue
     
-    if best_model is None:
-        print(f"Warning: Could not find a working model for {model_type}. Using default parameters.")
-        
-        # Create a default model as fallback
-        if model_type == 'XGBoost':
-            pipeline = Pipeline([
-                ('scaler', StandardScaler()),
-                ('model', xgb.XGBClassifier(
-                    random_state=42, 
-                    use_label_encoder=False, 
-                    eval_metric='mlogloss',
-                    n_jobs=-1
-                ))
-            ])
-        elif model_type == 'CatBoost':
-            pipeline = Pipeline([
-                ('scaler', StandardScaler()),
-                ('model', cb.CatBoostClassifier(
-                    random_seed=42,
-                    verbose=0,
-                    thread_count=-1
-                ))
-            ])
-        elif model_type == 'LogisticRegression':
-            pipeline = Pipeline([
-                ('scaler', StandardScaler()),
-                ('model', LogisticRegression(
-                    random_state=42,
-                    max_iter=1000,
-                    multi_class='multinomial',
-                    n_jobs=-1
-                ))
-            ])
-        elif model_type == 'Stacking':
-            base_estimators = [
-                ('rf', RandomForestClassifier(n_estimators=100, random_state=42)),
-                ('svm', SVC(probability=True, random_state=42)),
-                ('log', LogisticRegression(C=1.0, penalty='l1', solver='saga', random_state=42)),
-                ('xgb', xgb.XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42))
-            ]
-            pipeline = Pipeline([
-                ('scaler', StandardScaler()),
-                ('model', StackingClassifier(
-                    estimators=base_estimators,
-                    final_estimator=LogisticRegression(random_state=42),
-                    cv=3,
-                    n_jobs=-1
-                ))
-            ])
-        elif model_type == 'SVM':
-            pipeline = Pipeline([
-                ('scaler', StandardScaler()),
-                ('model', SVC(probability=True, random_state=42))
-            ])
-        elif model_type == 'KNN':
-            pipeline = Pipeline([
-                ('scaler', StandardScaler()),
-                ('model', KNeighborsClassifier(n_neighbors=5))
-            ])
-        elif model_type == 'RF':
-            pipeline = Pipeline([
-                ('scaler', StandardScaler()),
-                ('model', RandomForestClassifier(random_state=42))
-            ])
-        else:
-            # Use random forest as a fallback for any other model
-            pipeline = Pipeline([
-                ('scaler', StandardScaler()),
-                ('model', RandomForestClassifier(random_state=42))
-            ])
-            
-        pipeline.fit(X_train, y_train)
-        best_model = pipeline
-        best_params = {'model_params': {}, 'pca_components': None}
-        best_accuracy = 0.0
-    else:
-        print(f"Best {model_type} hyperparameters: {best_params}")
-        print(f"Best {model_type} validation accuracy: {best_accuracy:.4f}")
-    
     return best_model, best_params, best_accuracy
 
 # Train a final model on combined training and validation data
@@ -859,6 +780,7 @@ def main(sample_size=None, feature_type='sift', n_augmentations=5, batch_size=32
         else:
             print(f"  Parameters: {result['params']}")
 
+    return results
 # ---------------------- Script Execution ----------------------
 
 if __name__ == "__main__":
