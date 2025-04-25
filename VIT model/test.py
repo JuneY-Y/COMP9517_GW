@@ -11,7 +11,7 @@ from sklearn.metrics import classification_report
 NUM_CLASSES  = 15
 MODEL_NAME   = 'vit_base_patch16_224'
 WEIGHTS_PATH = 'best_model.pth'                # .pth from your training
-TEST_FOLDER  = r'testset\path'                 # raw string (Windows) or "testset/path"
+TEST_FOLDER  = r'testset/path'                 # raw string (Windows) or "testset/path"
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print('Using device:', DEVICE)
