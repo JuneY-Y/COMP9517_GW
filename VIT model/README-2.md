@@ -61,7 +61,6 @@ This is an implementation of VIT base model.
 
 ## Usage
 
-Run the main pipeline with:
 ```python
 
 ```
