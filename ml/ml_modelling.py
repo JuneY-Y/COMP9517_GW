@@ -6,7 +6,7 @@ from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cluster import KMeans
 from sklearn.mixture import GaussianMixture
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier, StackingClassifier, BaggingClassifier
+from sklearn.ensemble import RandomForestClassifier, VotingClassifier, StackingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, silhouette_score, calinski_harabasz_score
 from sklearn.preprocessing import StandardScaler
@@ -172,18 +172,6 @@ def create_xgboost(n_estimators=100, max_depth=3, learning_rate=0.1, subsample=0
         random_state=42,
         n_jobs=-1,
         eval_metric='mlogloss'  # For multi-class classification
-    )
-
-# Create a Bagging classifier
-def create_bagging(base_estimator=None, n_estimators=10, max_samples=1.0, bootstrap=True):
-
-    return BaggingClassifier(
-        base_estimator=base_estimator,
-        n_estimators=n_estimators,
-        max_samples=max_samples,
-        bootstrap=bootstrap,
-        random_state=42,
-        n_jobs=-1
     )
 
 # Create a Voting classifier
@@ -409,13 +397,7 @@ def try_hyperparameters(X_train, y_train, X_val, y_val, model_type, class_names,
             {'estimators': base_estimators, 'final_estimator': RandomForestClassifier(n_estimators=50, random_state=42), 'cv': 3},
             {'estimators': base_estimators, 'final_estimator': xgb.XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=42), 'cv': 3}
         ]
-    elif model_type == 'Bagging':
-        model_params = [
-            {'n_estimators': 10, 'max_samples': 0.8},
-            {'n_estimators': 10, 'max_samples': 1.0},
-            {'n_estimators': 20, 'max_samples': 0.8},
-            {'n_estimators': 20, 'max_samples': 1.0}
-        ]
+
     elif model_type == 'GMM':
         model_params = [
             {'n_components': len(class_names), 'covariance_type': 'full'},
@@ -480,10 +462,6 @@ def try_hyperparameters(X_train, y_train, X_val, y_val, model_type, class_names,
                 )))
             elif model_type == 'Stacking':
                 pipeline_steps.append(('model', create_stacking_classifier(**params)))
-            elif model_type == 'Bagging':
-                # Use SVC as base estimator for bagging
-                svc = SVC(probability=True, kernel='rbf', C=1.0, gamma='scale', random_state=42)
-                pipeline_steps.append(('model', BaggingClassifier(base_estimator=svc, random_state=42, **params)))
             elif model_type == 'GMM':
                 pipeline_steps.append(('model', GMMClassifier(**params)))
             
@@ -649,10 +627,6 @@ def train_final_model(X_combined, y_combined, model_type, best_params, pca_n_com
         )))
     elif model_type == 'Stacking':
         pipeline_steps.append(('model', create_stacking_classifier(**model_params)))
-    elif model_type == 'Bagging':
-        # Use SVC as base estimator for bagging
-        svc = SVC(probability=True, kernel='rbf', C=1.0, gamma='scale', random_state=42)
-        pipeline_steps.append(('model', BaggingClassifier(base_estimator=svc, random_state=42, **model_params)))
     elif model_type == 'GMM':
         pipeline_steps.append(('model', GMMClassifier(**model_params)))
     
@@ -778,7 +752,7 @@ def main(sample_size=None, feature_type='sift', n_augmentations=5, batch_size=32
     # List of models to try
     model_types = [
         # Supervised methods
-        'SVM', 'KNN', 'RF', 'XGBoost', 'CatBoost', 'LogisticRegression', 'Stacking', 'Bagging',
+        'SVM', 'KNN', 'RF', 'XGBoost', 'CatBoost', 'LogisticRegression', 'Stacking',
         # Unsupervised methods
         'K-means', 'GMM'
     ]
