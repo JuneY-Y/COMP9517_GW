@@ -1,6 +1,6 @@
-# Aerial Image Classification Project
+# Machine Learning
 
-This project implements a comprehensive machine learning pipeline for aerial image classification using traditional computer vision techniques combined with multiple machine learning algorithms. The focus is on extracting rich features from aerial imagery and evaluating different classification approaches.
+This is an implementation of traditional machine learning methods. The focus is on extracting rich features from aerial imagery and evaluating different classification approaches.
 
 ## Project Structure
 
@@ -18,7 +18,7 @@ This project implements a comprehensive machine learning pipeline for aerial ima
 ### 1. `ml_image_augmentation.py`
 - Implements contrast enhancement using CLAHE
 - Applies image sharpening via unsharp masking
-- Creates custom augmentations (occlusions, color jitters, rotations)
+- Creates custom augmentations (occlusions, color jitters, rotations, flips, occlusion)
 - Provides dataset and dataloader creation utilities
 
 ### 2. `ml_feature_extractor.py`
@@ -38,9 +38,9 @@ This project implements a comprehensive machine learning pipeline for aerial ima
 
 ### 5. `ml_modelling.py`
 - Trains and evaluates multiple classifiers:
-  - Traditional (SVM, KNN, Random Forests)
+  - Traditional (SVM, Logistic Regression, KNN, Random Forests)
   - Boosting (XGBoost, CatBoost)
-  - Ensemble (Stacking, Bagging, Voting)
+  - Ensemble (Stacking, Voting)
   - Unsupervised (K-means, GMM)
 - Performs hyperparameter optimization
 - Creates feature space visualizations
