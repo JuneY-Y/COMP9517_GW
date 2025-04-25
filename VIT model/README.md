@@ -1,6 +1,6 @@
 # Vision Transformer base model
 
-This is an implementation of VIT base model. 
+This repository is a complete experimental toolkit for remote-sensing scene classification built around a Vision Transformer (ViT-Base) backbone. It includes scripts for baseline training, long-tail optimisation (two-stage fine-tuning and end-to-end power-law training), robustness enhancement via Level-Matched Augmentation with KL consistency, and several structural ablations (removing specific transformer blocks, zeroing positional embeddings, stripping residual skips). A heat-map visualiser is also provided for attention inspection. Supply any image dataset organised as train/val/test folders and you can run the entire workflow—from model training and evaluation to interpretability analysis—out of the box, making it a one-stop solution for researchers, engineers, and educators working with Transformer-based vision models.
 
 ## Project Structure
 
